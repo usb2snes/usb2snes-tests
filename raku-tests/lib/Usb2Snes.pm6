@@ -64,7 +64,7 @@ method connect {
     $!ws = await Cro::WebSocket::Client.connect: $usb2snes-url;
 }
 
-method asyncConnect {
+method async-connect {
     $!ws = Cro::WebSocket::Client.connect: $usb2snes-url;
 }
 
@@ -93,11 +93,11 @@ method server-version {
     return (self!get-reply)[0];
 }
 
-method device-infos {
+method device-infos ($timeout = 500) {
     self.send-command(Info);
-    my @reply = self!get-reply(500);
+    my @reply = self!get-reply($timeout);
     return Nil if @reply ~~ Empty;
-    DeviceInfo.new(version => @reply[0], name => @reply[1], rom-running => @reply[2], flags => @reply[3..^Inf]);
+    DeviceInfo.new(version => @reply[0], name => @reply[1], rom-running => @reply[2], flags => @reply[3..^Inf])
 }
 
 # File methods
@@ -126,7 +126,7 @@ method rename(Str $path1, Str $path2) {
 
 method get-file(Str $path) {
     self.send-command(GetFile, $path);
-    my $size = (self!get-reply)[0];
+    my $size = parse-base((self!get-reply(1000))[0], 16);
     my $message;
     my Buf $data = Buf.new;
     react {
@@ -137,15 +137,57 @@ method get-file(Str $path) {
             }
         }
         whenever  Promise.in(500) {
-            done();
+            #done();
         }
     }
     return $data;
 }
 
 method send-file(Str $path, Blob $data) {
-    self.send-command(PutFile, $path, $data.bytes);
-    $!ws.send($data);
+    self.send-command(PutFile, $path, $data.bytes.base(16));
+    # original usb2snes app does not like write above 1024
+    # the hardware does not like it much ether x)
+    my $temp;
+    my $i = 0;
+    while ($temp = $data.subbuf($i * 1024, 1024)) {
+        $!ws.send($temp);
+        $i++;
+    }
+}
+
+
+method boot(Str $path) {
+    self.send-command(Boot, $path)
+}
+
+method menu {
+    self.send-command(Menu)
+}
+
+method reset {
+    self.send-command(Reset)
+}
+
+method get-address(Int $addr, Int $size, :$space = 'SNES') {
+    self.send-command(GetAddress, $addr.base(16), $size.base(16), :space($space));
+    my Buf $data = Buf.new;
+    react {
+        whenever $!ws.messages -> $msg {
+            whenever $msg.body-blob -> $body {
+                $data.append($body);
+                done() if $data.bytes == $size
+            }
+        }
+        whenever  Promise.in(5) {
+            done();
+        }
+    }
+    $data
+}
+
+method put-address(Int $addr, Int $size, Blob $data, :$space = 'SNES') {
+    self.send-command(PutAddress, $addr.base(16), $size.base(16));
+    $!ws.send($data)
 }
 
 method  !get-reply ($timeout = 200){

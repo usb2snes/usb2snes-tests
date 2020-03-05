@@ -2,6 +2,7 @@ use Test;
 use Usb2Snes;
 
 # Request stall after receiving a device error with sd2snes
+# Sometimes?
 
 my $usb2snes = Usb2Snes.new();
 $usb2snes.connect('test-stalling-after-error');

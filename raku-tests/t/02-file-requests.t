@@ -5,6 +5,7 @@ my constant $test-dir = "usb2snes-tests";
 my $usb2snes = Usb2Snes.new;
 
 $usb2snes.connect;
+$usb2snes.set-name("usb2snes test file command");
 my @devices = $usb2snes.list-devices;
 if @devices ~~ Empty {
     diag "No device available, please start one";
@@ -33,7 +34,7 @@ $usb2snes.rm($test-dir ~ '/test1') if 'test1' ∈ @files;
 ok 'test1' ∉ @files, "No test1 file, can write it";
 my $file1 = Blob.new(<1 2 3>);
 $usb2snes.send-file($test-dir ~ "/test1", $file1);
-@files = $usb2snes.ls($test-dir, :timeout(1000)); # Creating file is slow
+@files = $usb2snes.ls($test-dir, :timeout(2000)); # Creating file is slow
 ok 'test1' ∈ @files, "test1 created successfully";
 my Blob $upfile1 = $usb2snes.get-file($test-dir ~ "/test1");
 is $file1, $upfile1, "test1 file data match";
@@ -48,5 +49,13 @@ $usb2snes.rm($test-dir ~ '/piko');
 @files = $usb2snes.ls($test-dir, :timeout(1000));
 ok 'piko' ∉ @files, "piko directory removed succesfully";
 
+if ('../custom rom/usb2snes-testlorom.sfc'.IO ~~ :e) {
+    my Buf $test-rom = slurp '../custom rom/usb2snes-testlorom.sfc', :bin;
+    @files = $usb2snes.ls: $test-dir;
+    $usb2snes.rm($test-dir ~ '/test-lorom.sfc') if 'test-lorom.sfc' ∈ @files;
+    $usb2snes.send-file($test-dir ~ '/test-lorom.sfc', $test-rom);
+    my $test-rom-got = $usb2snes.get-file($test-dir ~ '/test-lorom.sfc');
+    is $test-rom-got, $test-rom, "";
+}
 
 done-testing;
