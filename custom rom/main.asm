@@ -71,7 +71,7 @@ dumbloop:
     CPX #50
     BNE dumbloop
 
-    ldx #0050
+    ldx #0049
     ldy #$0000
 myincyloop:
     sta $7E0000,x
