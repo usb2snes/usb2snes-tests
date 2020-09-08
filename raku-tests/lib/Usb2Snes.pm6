@@ -81,7 +81,7 @@ method set-name (Str $name) {
 
 method list-devices {
     self.send-command(DeviceList);
-    self!get-reply;
+    self!get-reply: 500;
 }
 
 method attach (Str $device-name) {
@@ -185,9 +185,36 @@ method get-address(Int $addr, Int $size, :$space = 'SNES') {
     $data
 }
 
-method put-address(Int $addr, Int $size, Blob $data, :$space = 'SNES') {
-    self.send-command(PutAddress, $addr.base(16), $size.base(16));
+method get-address(**@toget is rw where {$_.all ~~ List}, :$space = 'SNES') {
+    my $total-size = 0;
+    for @toget <-> ($a, $s) {
+        $a = $a.base(16);
+        $total-size += $s;
+        $s = $s.base(16);
+    }
+    self.send-command(GetAddress, |@toget, :space($space));
+    my Buf $data = Buf.new;
+    react {
+        whenever $!ws.messages -> $msg {
+            whenever $msg.body-blob -> $body {
+                $data.append($body);
+                done() if $data.bytes == $total-size;
+            }
+        }
+        whenever  Promise.in(5) {
+            done();
+        }
+    }
+    $data
+}
+
+method put-address(Int $addr, Blob $data, :$space = 'SNES') {
+    self.send-command(PutAddress, $addr.base(16), $data.bytes.base(16));
     $!ws.send($data)
+}
+
+method send-data(Buf $data) {
+    $!ws.send($data);
 }
 
 method  !get-reply ($timeout = 200){

@@ -1,5 +1,6 @@
 use Test;
 use Usb2Snes;
+use TestUsb2Snes;
 
 my $usb2snes = Usb2Snes.new;
 
@@ -13,12 +14,7 @@ if @devices ~~ Empty {
 }
 $usb2snes.attach: @devices.first;
 my $infos = $usb2snes.device-infos;
-unless $infos.rom-running eq '/usb2snes-tests/test-lorom.sfc' | '/usb2snes-tests/test-hirom.sfc' | '/usb2snes-tests/test-exhirom.sfc'
-        | 'USB2SNES Test LoROM  ' | 'USB2SNES Test HiROM  ' | 'USB2SNES Test ExHiROM' {
-    diag "Not running one of the test rom";
-    done-testing;
-    exit 1;
-}
+is-test-rom-running($usb2snes);
 
 #Copy of free-software-song.ogg starting at $8000
 #Copy alternating bytes of free-software-song.ogg at $57CA7
@@ -59,14 +55,18 @@ ok $usb2snes.get-address(0xF50000 + 50, 40) eq Buf.new([0 xx 40]), 'WRAM D50:40 
 ok $usb2snes.get-address(0xF50000 + 50 + 80, 40) eq Buf.new([2 xx 40]), 'WRAM D80:40 = 1...';
 ok $usb2snes.get-address(0xF50000 + 50 + 40 * 5, 40) eq Buf.new([5 xx 40]), 'WRAM D40*5:40 = 5...';
 
-ok $usb2snes.get-address(0x8000, 200) eq $fsf-song.subbuf(0, 200), 'ROM $8000:200 = fsf data';
-ok $usb2snes.get-address(0x8000 + 0x2500, 100) eq $fsf-song.subbuf(0x2500, 100), 'ROM $A500:200 = fsf data';
+if (NO_ROM_READ.Str ∉ $infos.flags) {
+    ok $usb2snes.get-address(0x8000, 200) eq $fsf-song.subbuf(0, 200), 'ROM $8000:200 = fsf data';
+    ok $usb2snes.get-address(0x8000 + 0x2500, 100) eq $fsf-song.subbuf(0x2500, 100), 'ROM $A500:200 = fsf data';
 
-ok $usb2snes.get-address(0x57CA7 + 42, 200) eq $fsf-alt.subbuf(42, 200), 'ROM $57CA7+42:200 = fsf alternate byte data';
+    ok $usb2snes.get-address(0x57CA7 + 42, 200) eq $fsf-alt.subbuf(42, 200), 'ROM $57CA7+42:200 = fsf alternate byte data';
 
-ok $usb2snes.get-address(0xA794E + 450, 200) eq $fsf-add5.subbuf(450, 200), 'ROM $A764E+450:200 = fsf add 5 data';
+    ok $usb2snes.get-address(0xA794E + 450, 200) eq $fsf-add5.subbuf(450, 200), 'ROM $A764E+450:200 = fsf add 5 data';
 
-ok $usb2snes.get-address(0xF75F5 + 88, 200) eq $fsf-xor22.subbuf(88, 200), 'ROM $F75F5+88:200 = fsf xor 22 data';
+    ok $usb2snes.get-address(0xF75F5 + 88, 200) eq $fsf-xor22.subbuf(88, 200), 'ROM $F75F5+88:200 = fsf xor 22 data';
+} else {
+    skip  "Device does not support ROM access", 5
+}
 
 ok $usb2snes.get-address(0xE00000 + 48, 100) eq $sram.subbuf(48, 100), "SRAM 48:100 = fsf = fsf xor 42";
 ok $usb2snes.get-address(0xE00000 + 0x1000, 100) eq $sram.subbuf(0x1000, 100), 'SRAM $1000:100 = fsf xor 69';
