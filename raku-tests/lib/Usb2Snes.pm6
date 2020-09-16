@@ -24,6 +24,7 @@ enum Usb2Snes-Opcode <
     Remove
     Rename
     MakeDir
+    Close
 >;
 
 enum Usb2Snes-Flag is export <NO_FILE_CMD NO_CONTROL_CMD NO_ROM_WRITE NO_ROM_READ>;
@@ -168,7 +169,7 @@ method reset {
     self.send-command(Reset)
 }
 
-method get-address(Int $addr, Int $size, :$space = 'SNES') {
+multi method get-address(Int $addr, Int $size, :$space = 'SNES') {
     self.send-command(GetAddress, $addr.base(16), $size.base(16), :space($space));
     my Buf $data = Buf.new;
     react {
@@ -185,14 +186,14 @@ method get-address(Int $addr, Int $size, :$space = 'SNES') {
     $data
 }
 
-method get-address(**@toget is rw where {$_.all ~~ List}, :$space = 'SNES') {
+multi method get-address(**@toget, :$space = 'SNES') {
     my $total-size = 0;
-    for @toget <-> ($a, $s) {
-        $a = $a.base(16);
+    my @plop;
+    for @toget -> ($a, $s) {
+        @plop.push($a.base(16), $s.base(16));
         $total-size += $s;
-        $s = $s.base(16);
     }
-    self.send-command(GetAddress, |@toget, :space($space));
+    self.send-command(GetAddress, |@plop, :space($space));
     my Buf $data = Buf.new;
     react {
         whenever $!ws.messages -> $msg {
@@ -208,9 +209,29 @@ method get-address(**@toget is rw where {$_.all ~~ List}, :$space = 'SNES') {
     $data
 }
 
-method put-address(Int $addr, Blob $data, :$space = 'SNES') {
+multi method put-address(Int $addr, Blob $data, :$space = 'SNES') {
     self.send-command(PutAddress, $addr.base(16), $data.bytes.base(16));
     $!ws.send($data)
+}
+
+multi method put-address(**@args, :$space = 'SNES') {
+    my @params;
+    my @datas;
+    for @args -> $arg {
+        say $arg.raku, $arg.WHAT;
+        say "I am a list" if $arg ~~ List;
+        @params.push(($arg[0].base(16), $arg[1].base(16))) if $arg ~~ List;
+        @datas.push($arg)  if $arg ~~ Blob;
+    }
+    say @params.raku, @datas.raku;
+    return ;
+    self.send-command(PutAddress, |@params, :space($space));
+    $!ws.send(@datas.join);
+}
+
+
+method close {
+    self.send-command(Close);
 }
 
 method send-data(Buf $data) {
@@ -232,7 +253,7 @@ method  !get-reply ($timeout = 200){
         }
     }
     return Empty unless $message;
-    say $message;
+    #say $message;
     my %reply = from-json $message;
     @(%reply<Results>);
 }
@@ -253,6 +274,7 @@ method send-command(Usb2Snes-Opcode $cmd, *@args, :$space = "SNES") {
     #say "Sending" ~ to-json %cmd;
     $!ws.send(to-json %cmd)
 }
+
 
 #multi method send-command(Usb2Snes-Opcode $cmd, Str $arg)
 #{

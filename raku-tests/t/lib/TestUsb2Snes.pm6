@@ -63,8 +63,8 @@ sub init-test-data is export {
     $test-wram-data = Buf.new;
     $test-wram-data.append(Buf.new([0 xx 50]));
     my $cpt = 0;
-    loop ($i = 50; $i < 0x2000; $i++) {
+    loop ($i = 49; $i < 0x2000; $i++) {
         $test-wram-data[$i] = $cpt;
-        $cpt++ if (($i != 50) && (($i - 50) % 40 == 0));
+        $cpt++ if (($i != 49) && (($i - 49) % 40 == 0));
     }
 }

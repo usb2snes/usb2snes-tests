@@ -295,5 +295,45 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Cro::WebSocket" type="perl6">
+        <CLASSES />
+        <SOURCES>
+          <root url="raku://1165951812:Cro::WebSocket!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Cro::WebSocket" type="perl6">
+        <CLASSES />
+        <SOURCES>
+          <root url="raku://1165951812:Cro::WebSocket!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Cro::WebSocket" type="perl6">
+        <CLASSES />
+        <SOURCES>
+          <root url="raku://1165951812:Cro::WebSocket!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Cro::WebSocket" type="perl6">
+        <CLASSES />
+        <SOURCES>
+          <root url="raku://1165951812:Cro::WebSocket!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Cro::WebSocket" type="perl6">
+        <CLASSES />
+        <SOURCES>
+          <root url="raku://1165951812:Cro::WebSocket!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

@@ -15,6 +15,7 @@ if @devices ~~ Empty {
 $usb2snes.attach: @devices.first;
 my $infos = $usb2snes.device-infos;
 is-test-rom-running($usb2snes);
+init-test-data();
 
 #Copy of free-software-song.ogg starting at $8000
 #Copy alternating bytes of free-software-song.ogg at $57CA7
@@ -70,5 +71,7 @@ if (NO_ROM_READ.Str ∉ $infos.flags) {
 
 ok $usb2snes.get-address(0xE00000 + 48, 100) eq $sram.subbuf(48, 100), "SRAM 48:100 = fsf = fsf xor 42";
 ok $usb2snes.get-address(0xE00000 + 0x1000, 100) eq $sram.subbuf(0x1000, 100), 'SRAM $1000:100 = fsf xor 69';
+
+ok $usb2snes.get-address(0xF50000 + 50, 550) eq $test-wram-data.subbuf(50, 550), "WRAM D50:550, testing sd2snes blocksize handling";
 
 done-testing;
