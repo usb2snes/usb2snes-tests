@@ -69,6 +69,9 @@ method async-connect {
     $!ws = Cro::WebSocket::Client.connect: $usb2snes-url;
 }
 
+method closed returns Bool {
+    $!ws.closed
+}
 
 #{
 #    "Results" : ["data1", "data2"]
@@ -215,18 +218,22 @@ multi method put-address(Int $addr, Blob $data, :$space = 'SNES') {
 }
 
 multi method put-address(**@args, :$space = 'SNES') {
-    my @params;
-    my @datas;
+    my @address;
+    my $datas = Buf.new;
+    my @sizes;
     for @args -> $arg {
-        say $arg.raku, $arg.WHAT;
-        say "I am a list" if $arg ~~ List;
-        @params.push(($arg[0].base(16), $arg[1].base(16))) if $arg ~~ List;
-        @datas.push($arg)  if $arg ~~ Blob;
+        @address.push($arg.base(16)) if $arg ~~ Int;
+        if $arg ~~ Blob {
+            $datas.append($arg);
+            @sizes.push($arg.bytes);
+        }
     }
-    say @params.raku, @datas.raku;
-    return ;
-    self.send-command(PutAddress, |@params, :space($space));
-    $!ws.send(@datas.join);
+    my @put-params;
+    loop (my $i = 0; $i < @address.elems; $i++) {
+        @put-params.push(@address[$i], @sizes[$i].base(16));
+    }
+    self.send-command(PutAddress, |@put-params, :space($space));
+    $!ws.send($datas);
 }
 
 
