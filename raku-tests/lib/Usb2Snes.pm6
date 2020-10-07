@@ -37,6 +37,10 @@ my class DeviceInfo is export {
     has @.flags;
 }
 
+our constant WRAM-START is export = 0xF50000;
+our constant SRAM-START is export = 0xE00000;
+our constant ROM-START is export = 0;
+
 our class FileInfo {
     has Str $.name;
     has file-type $.type;
