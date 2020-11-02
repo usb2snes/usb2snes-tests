@@ -117,8 +117,6 @@ myincyloop:
 
 
     ;Registre $4200, on active le NMI(VBlank) et le joypad 
-    lda #$81 
-    sta NMITIMEN
 
     Game: 
         wai ; interruption (qui permet d'attendre le NMI) 
@@ -126,11 +124,5 @@ myincyloop:
                          
     jmp Game 
 
-
-VBlank: 
-
-     
-
-    rti
 
 

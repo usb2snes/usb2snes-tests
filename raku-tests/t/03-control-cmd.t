@@ -13,7 +13,7 @@ if (NO_CONTROL_CMD.Str ∈ $infos.flags) {
     done-testing;
     exit 1;
 }
-if $infos.rom-running ne '/sd2snes/menu.bin' {
+unless $infos.rom-running eq '/sd2snes/menu.bin' | '/sd2snes/m3nu.bin'{
     diag "Please get the sd2snes on the menu";
     done-testing;
     exit 1;

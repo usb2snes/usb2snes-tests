@@ -25,7 +25,7 @@
     COP    $0000 
     BRK    $0000 
     ABORT  $0000 
-    NMI    VBlank 
+    NMI    $0000 
     UNUSED $0000 
     IRQ    $0000 
 .ENDNATIVEVECTOR 
@@ -34,7 +34,7 @@
     COP    $0000 
     UNUSED $0000 
     ABORT  $0000 
-    NMI    VBlank 
+    NMI    $0000 
     RESET  Main 
     IRQBRK $0000 
 .ENDEMUVECTOR
