@@ -74,7 +74,7 @@ my Promise @clients = (^10).map: {
         $usb2snes-client.connect;
         $usb2snes-client.set-name("usb2snes get stress client " ~ $client-id⚛++);
         $usb2snes-client.attach: @devices.first;
-        for ^1000 {
+        for ^1000000 {
             if $atomic-death > 0 {
                 die;
             }

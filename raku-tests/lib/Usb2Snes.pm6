@@ -89,7 +89,7 @@ method set-name (Str $name) {
 
 method list-devices {
     self.send-command(DeviceList);
-    self!get-reply: 500;
+    self!get-reply: 1000;
 }
 
 method attach (Str $device-name) {

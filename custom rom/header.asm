@@ -15,7 +15,7 @@
     SLOWROM 
     CARTRIDGETYPE $00 
     ROMSIZE $0a ;size rom 08-0c 
-    SRAMSIZE $03
+    SRAMSIZE $06
     COUNTRY $00 ;0 = japan , 1 = US , 2 = Europe 
     LICENSEECODE $00 
     VERSION 00 

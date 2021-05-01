@@ -10,7 +10,14 @@ Copy of free-software-song.ogg starting at $8000
 Copy alternating bytes of free-software-song.ogg at $57CA7
 Copy free-software-song.ogg byte +5 at $A794E
 Copy free-software-song.ogg XOR 22 at $F75F5
+The rest of the rom is filled with regular fsf song data.
 
 WRAM is set to 0 up to 50 then it's 40 bytes of 0, 40 bytes of 1, ect...
 
 SRAM $0-$1000 is xor 42 (decimal) of the second bank ($01) $1000-$2000 is xor 69 (decimal)
+
+Every extra $1000 byte of sram is build like that : 
+
+rombyte[0x18000 + i] xor (11 + extra_sram_bank)
+
+extra_sram_bank start at 0 and is incremented each $1000 byte of sram

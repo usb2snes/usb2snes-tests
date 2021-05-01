@@ -1,4 +1,4 @@
-.include "header.asm" 
+.include "header_lorom.asm" 
 .include "snes.asm" 
 
 
@@ -114,6 +114,22 @@ myincyloop:
     INX
     CPX #$1000
     BNE sramloop3
+
+    sramtorom:
+    stz $02
+    ldx #$0000
+    mysramloop:
+    lda $718000, X
+    EOR $02
+    sta $710000, X
+    INX
+    CPX #$8000
+    BNE mysramloop
+    lda $02
+    INA
+    sta $02
+    CMP #8
+    BNE sramtorom
 
 
     ;Registre $4200, on active le NMI(VBlank) et le joypad 
