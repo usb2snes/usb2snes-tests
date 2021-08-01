@@ -10,6 +10,7 @@ my @devices = $usb2snes.list-devices;
 ok @devices, "Listing device";
 $usb2snes.attach: @devices.first;
 my $infos = $usb2snes.device-infos;
+diag "Device name : " ~ $infos.name;
 ok $infos.name, "Getting the device name";
 
 done-testing;

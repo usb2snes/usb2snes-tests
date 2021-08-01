@@ -5,13 +5,15 @@ our constant $test-dir is export = "usb2snes-tests";
 our $test-rom-data is export;
 our $test-sram-data is export;
 our $test-wram-data is export;
+our $test-rom-data-start is export = 0x10_000;
 
 my constant $fsf-song-path = '../custom rom/free-software-song.ogg';
 
 sub is-test-rom-running($usb2snes) is export {
     my $infos = $usb2snes.device-infos;
     unless $infos.rom-running eq '/usb2snes-tests/test-lorom.sfc' | '/usb2snes-tests/test-hirom.sfc' | '/usb2snes-tests/test-exhirom.sfc'
-            | 'USB2SNES Test LoROM  ' | 'USB2SNES Test HiROM  ' | 'USB2SNES Test ExHiROM'  || $infos.rom-running ~~ /"usb2snes-testlorom.sfc"/ {
+            | 'USB2SNES Test LoROM  ' | 'USB2SNES Test HiROM  ' | 'USB2SNES Test ExHiROM'  || $infos.rom-running ~~ /"usb2snes-testlorom"/
+            || $infos.rom-running ~~ /"usb2snes-testhirom"/ {
         diag "Not running one of the test rom";
         done-testing;
         exit 1;
@@ -56,7 +58,7 @@ sub init-test-data is export {
     }
     $test-sram-data = $sram;
     $test-rom-data = Buf.new;
-    $test-rom-data.append(Buf.new([0 xx 0x8000]));
+    $test-rom-data.append(Buf.new([0 xx 0x10000]));
     $test-rom-data.append($fsf-song);
     $test-rom-data.append($fsf-alt);
     $test-rom-data.append($fsf-add5);

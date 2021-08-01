@@ -15,65 +15,76 @@
 bool    validate_rom(FILE* fd)
 {
     char buffer[10];
-    fseek(fd, 0x8000, SEEK_SET);
+    fseek(fd, 0x10000, SEEK_SET);
     fread(&buffer, 1, 4, fd);
     buffer[4] = 0;
     if (strncmp(buffer, "OggS", 4) != 0)
         FAIL("fsf data : Does not start with fsf data\n")
-    fseek(fd, 0x57CA6, SEEK_SET);
+    fseek(fd, 0x5FCA6, SEEK_SET);
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x92, "fsf data : Does not end with the last fsf byte")
     fread(&buffer, 1, 4, fd);
     if (strncmp(buffer, "gOSg", 4) != 0)
         FAIL("Swapped fsf : Does not start with right data\n")
-    fseek(fd, 0xA794D, SEEK_SET);
+    fseek(fd, 0xAF94D, SEEK_SET);
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x92, "Swapped fsf : Does not end with fsf last byte")
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x54, "fsf data +5 : Does not start with right byte")
-    fseek(fd, 0xF75F4, SEEK_SET);
+    fseek(fd, 0xFF5F4, SEEK_SET);
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x97, "fsf data +5 : Does not end with right byte")
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x59, "fsf data xor 22 : Does not start with right byte")
-    fseek(fd, 0x14729B, SEEK_SET);
+    fseek(fd, 0x14F29B, SEEK_SET);
     fread(&buffer, 1, 1, fd);
     MATCH_BYTE(buffer[0], 0x84, "fsf data xor 22 : Does not end with right byte")
-    fseek(fd, 0x14729C, SEEK_SET);
+    fseek(fd, 0x14F29C, SEEK_SET);
     fread(&buffer, 1, 4, fd);
     buffer[4] = 0;
     if (strncmp(buffer, "OggS", 4) != 0)
         FAIL("fsf end filler : Does not start with fsf data\n")
-    fseek(fd, 0x196F43, SEEK_SET);
+    fseek(fd, 0x19EF43, SEEK_SET);
     fread(&buffer, 1, 4, fd);
     buffer[4] = 0;
     if (strncmp(buffer, "OggS", 4) != 0)
         FAIL("fsf 2 end filler : Does not start with fsf data\n")
-    fseek(fd, 0x1E6BEA, SEEK_SET);
+    fseek(fd, 0x1EEBEA, SEEK_SET);
     fread(&buffer, 1, 4, fd);
     buffer[4] = 0;
     if (strncmp(buffer, "OggS", 4) != 0)
         FAIL("fsf third end filler : Does not start with fsf data\n")
     fseek(fd, 0x1FFFFF, SEEK_SET);
     fread(&buffer, 1, 1, fd);
-    MATCH_BYTE(buffer[0], 0x3D, "Final byte")
+    MATCH_BYTE(buffer[0], 0xAC, "Final byte")
     return true; 
-}
+} /// 4 FCA7
 
 #undef FAIL
 
 int main(int ac, char *ag[])
 {
-    if (ac != 3)
+    if (ac != 4)
         return -1;
+    unsigned header_offset = 0;
+    char buffer[1024];
+    //char hi_rom_header[0x40];
+    bool    hirom = false;
     FILE* fd = fopen(ag[1], "r+");
-    fseek(fd, 0x7FD8, SEEK_SET);
+    if (strcmp(ag[3], "HiROM") == 0)
+    {
+        hirom = true;
+        header_offset += 0x8000;
+        fseek(fd, 0xFFC0, SEEK_SET);
+        //fread(hi_rom_header, 1, 0x40, fd);
+    }
+    fseek(fd, header_offset + 0x7FD8, SEEK_SET);
     printf("Setting the sram size to 8kB\n");
     char plop = 4;
     fwrite(&plop, 1, 1, fd);
-    fseek(fd, 0x8000, SEEK_SET);
+    // HiROM make this annoying 0x8000 is lorom bank1, but 0x8000 is hirom bank0 where the header/code is
+    fseek(fd, 0x10000, SEEK_SET);
     FILE* fsf = fopen(ag[2], "r");
-    char buffer[1024];
     int readed;
     printf("Copying %s to $%X\n", ag[2], (unsigned int) ftell(fd));
     // Copy the file as is
@@ -146,7 +157,7 @@ int main(int ac, char *ag[])
         wait(&s);
     }
     FILE *new_fd = fopen(new_rom, "r+");
-    fseek(new_fd, 0x7FD8, SEEK_SET);
+    fseek(new_fd, header_offset + 0x7FD8, SEEK_SET);
     plop = 7;
     fwrite(&plop, 1, 1, new_fd);
     printf("Checking if the rom follows the expected data\n");
