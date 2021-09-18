@@ -1,9 +1,10 @@
 .include "header_hirom.asm" 
 .include "snes.asm"
 
+.BANK 0
 .ORG 0
 
-Main: 
+Main:
     xce     
     rep #$10    ;met les registres xy en 16 bits 
 

@@ -1,20 +1,12 @@
-rm main.obj
-rm dumb
 
-echo '[objects]' > dumb 
-echo 'main.obj' >> dumb
+~/asar-1.81/src/asar/asar-standalone main_lorom.asm
+cp main_lorom.sfc usb2snes-testlorom.sfc
 
-~/wla-dx-9.10/binaries/wla-65816 -o main.obj main_lorom.asm
-~/wla-dx-9.10/binaries/wlalink dumb usb2snes-testlorom.sfc
+## echo '[objects]' > dumb 
+## echo 'main.obj' >> dumb
 
-rm main.obj
-rm dumb
-
-echo '[objects]' > dumb 
-echo 'main.obj' >> dumb
-
-~/wla-dx-9.10/binaries/wla-65816 -o main.obj main_hirom.asm
-~/wla-dx-9.10/binaries/wlalink dumb usb2snes-testhirom.sfc
+##~/wla-dx-9.10/binaries/wla-65816 -o main.obj main_hirom.asm
+##~/wla-dx-9.10/binaries/wlalink dumb usb2snes-testhirom.sfc
 
 
 ## donwload https://www.gnu.org/music/free-software-song.ogg
@@ -25,4 +17,4 @@ else
 fi
 
 gcc fillrom.c -o fillrom && ./fillrom usb2snes-testlorom.sfc free-software-song.ogg LoROM
-./fillrom usb2snes-testhirom.sfc free-software-song.ogg HiROM
+#./fillrom usb2snes-testhirom.sfc free-software-song.ogg HiROM
