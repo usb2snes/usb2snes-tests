@@ -6,15 +6,23 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 
 #define MATCH_BYTE(R, E, S) {if ((uint8_t)E != (uint8_t)R) {fprintf(stderr, "%s - Expected : %02X, got : %02X\n", S, (uint8_t) E, (uint8_t) R);return false;}}
 
 #define FAIL(S) {fprintf(stderr, S); return false;}
 
+#define ROM_SIZE 2097152
+
 bool    validate_rom(FILE* fd)
 {
     char buffer[10];
+    struct stat mystat;
+    fstat(fileno(fd), &mystat);
+    printf("Validate size : %ld\n", mystat.st_size);
+    if (mystat.st_size != ROM_SIZE)
+        FAIL("Rom does not match expected ROM Size\n");
     fseek(fd, 0x10000, SEEK_SET);
     fread(&buffer, 1, 4, fd);
     buffer[4] = 0;
@@ -70,13 +78,16 @@ int main(int ac, char *ag[])
     char buffer[1024];
     //char hi_rom_header[0x40];
     bool    hirom = false;
-    FILE* fd = fopen(ag[1], "r+");
+    FILE* fd = fopen(ag[1], "r+b");
     if (strcmp(ag[3], "HiROM") == 0)
     {
+        printf("Rom is HiROM\n");
         hirom = true;
         header_offset += 0x8000;
         fseek(fd, 0xFFC0, SEEK_SET);
         //fread(hi_rom_header, 1, 0x40, fd);
+    } else {
+        printf("Rom is LoROM\n");
     }
     fseek(fd, header_offset + 0x7FD8, SEEK_SET);
     printf("Setting the sram size to 8kB\n");
@@ -137,12 +148,28 @@ int main(int ac, char *ag[])
         rewind(fsf);
         while ((readed = fread(&buffer, 1, 1024, fsf)) && end_pos < 0x200000)
         {
+            if ((ftell(fd) + readed) > 0x200000)
+                readed = 0x200000 - ftell(fd);
             fwrite(buffer, 1, readed, fd);
             end_pos = ftell(fd);
         }
         end_pos = ftell(fd);
+        //printf("End pos : %x\n", end_pos);
     }
     fclose(fsf);
+    fclose(fd);
+    fd = fopen(ag[1], "rb");
+    printf("Checking if the rom follows the expected data\n");
+    if (validate_rom(fd) == false)
+    {
+        fprintf(stderr, "Error, the rom data does not match expected data\n");
+        exit(1);
+    }
+    printf("ok\n");
+    struct stat mystat;
+    fstat(fileno(fd), &mystat);
+    printf("ROM Size is : %ld\n", mystat.st_size);
+    fclose(fd);
     unsigned int name_size = strlen(ag[1]);
     char* new_rom = (char*) malloc(strlen(ag[1]) + 6);
     strcpy(new_rom, ag[1]);
@@ -156,17 +183,9 @@ int main(int ac, char *ag[])
         int s;
         wait(&s);
     }
-    FILE *new_fd = fopen(new_rom, "r+");
+    FILE *new_fd = fopen(new_rom, "r+b");
     fseek(new_fd, header_offset + 0x7FD8, SEEK_SET);
     plop = 7;
     fwrite(&plop, 1, 1, new_fd);
-    printf("Checking if the rom follows the expected data\n");
-    if (validate_rom(fd) == false)
-    {
-        fprintf(stderr, "Error, the rom data does not match expected data\n");
-        exit(1);
-    }
-    printf("ok\n");
     fclose(new_fd);
-    fclose(fd);
 }

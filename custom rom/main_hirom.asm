@@ -1,86 +1,84 @@
-.include "header_hirom.asm" 
-.include "snes.asm"
-
-.BANK 0
-.ORG 0
+hirom
+incsrc "header_hirom.asm"
+org $400000
+incsrc "snes.asm"
 
 Main:
-    xce     
+    xce
+    rep #$10  
     rep #$10    ;met les registres xy en 16 bits 
 
-    SNES_INIT 
+    %SNES_INIT()
     
     ;INITIAL SETTINGS 
     
     ; c'est le registre $2100, il permet de faire un Forced Blank et de régler la luminosité 
     lda #$8F 
-    sta INIDISP 
+    sta !INIDISP 
 
     ;general init 
      
     ;Registre $212C, active l'utilisation des plans obj + bg 
     lda #$01 ; on active le BG1 
-    sta TM 
+    sta !TM 
     
     ;Registre $2115, c'est pour dire que, à chaque fois qu'on écrit sur la VRAM avec le registre $2118/$2119, il incrémentera l'adresse quand on écrit à $2119 
     lda #$80 
-    sta VMAINC 
+    sta !VMAINC 
    
     
     ;La première couleur sera la couleur de fond de la SNES, 
     ;si un BG ou un sprite l'utilisent,la première couleur sera la transparence.
     ;adresse de CG-RAM = 0 
     lda #$00 
-    sta CGADD 
+    sta !CGADD 
 
      
     ;Registre $2122 écrit sur la palette 
      
     ;orange 
     lda #$FF ; VVVR RRRR 
-    sta CGDATA 
+    sta !CGDATA 
     
     lda #$01 ; BBBB B0VV 
-    sta CGDATA 
+    sta !CGDATA 
      
     ;Là, il a incrémenté, donc on est à l'adresse de CG-RAM = 1 
      
     ;bleu 
     lda #$00 ; VVVR RRRR 
-    sta CGDATA 
+    sta !CGDATA 
     
     lda #$F7 ; BBBB B0VV 
-    sta CGDATA 
+    sta !CGDATA 
     
     ;ainsi de suite 
      
     
     ;On désactive le Forced Blank 
     lda #$0F 
-    sta INIDISP 
-        
-
+    sta !INIDISP 
 
 
     ;;; WRAM Init
     ;; WRAM is set to 0 up to 50 then it's 40 bytes of 0, 40 bytes of 1, ect...
 
     lda #$00
-    ldx #0000
+    ldx.w #0000
 dumbloop:
     stz 0,x
     INX
-    CPX #50
+    CPX.w #50
     BNE dumbloop
 
     ldx #0049
     ldy #$0000
 myincyloop:
     sta $7E0000,x
-    CPY #40
+    CPY.w #40
     BNE continueloop
     ldy #$0000
-    INA
+    INC
     continueloop:
     INY
     INX
@@ -139,9 +137,9 @@ myincyloop:
     CPY $03
     BNE anotherloop
     sep #$20
-    dea
-    dea
-    dea
+    dec
+    dec
+    dec
     sta $04
 
     clc
