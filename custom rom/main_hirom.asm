@@ -1,8 +1,7 @@
 hirom
 incsrc "header_hirom.asm"
-org $400000
+org $8000
 incsrc "snes.asm"
-
 Main:
     xce
     rep #$10  
@@ -70,8 +69,7 @@ dumbloop:
     INX
     CPX.w #50
     BNE dumbloop
-
-    ldx #0049
+    ldx.w #0049
     ldy #$0000
 myincyloop:
     sta $7E0000,x
@@ -115,9 +113,6 @@ myincyloop:
     CPX #$1000
     BNE sramloop3
 
-    
-    jmp Game
-
     ;; Extended sram stuff
     lda $00FFD8
     rep #$80
@@ -147,14 +142,14 @@ myincyloop:
     sta $05
 
     ; building the address in memory
-    lda #$30
+    lda #$D8
     sta $12
-    lda #$70
+    lda #$21
     sta $22
-    lda #$80
+    lda #$00
     sta $11
     stz $10
-    lda #$20
+    lda #$60
     sta $21
     stz $20
     stz $20
@@ -174,7 +169,7 @@ myincyloop:
             tya
             ORA #$F000
             cmp #$F000 ; testing if we did a 0x1000 jump, to change the xor value and get out
-            bne piko
+            bne piko 
                 sep #$20
                 lda $02
                 cmp $05
@@ -183,9 +178,9 @@ myincyloop:
             piko:
             ldy $07
             sep #$20
-            CPY #$8000
+            CPY #$3000
             BNE mysramloop
-        inc $12
+        ;inc $12 Hirom is continuous
         inc $22
         INX
         jmp romtosram
@@ -199,5 +194,5 @@ myincyloop:
                          
     jmp Game 
 
-
+print pc
 

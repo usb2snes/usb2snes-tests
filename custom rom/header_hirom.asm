@@ -16,8 +16,8 @@ db $21 ; rom map
 db $02 ; rom type, rom, ram, sram
 db $0b ; rom size
 db $03 ; sram size
-db $00 ; ntsc
-db $00 ; use $FFB0 for header
+db $01 ; ntsc
+db $C3 ; use $FFB0 for header
 db $33 ; version
 dw #$FFFF ; checksum
 dw #$0000 ; inverse checksum
@@ -28,7 +28,7 @@ dw $0000 ; Vector_COP0
 dw $0000 ; Vector_BRK
 dw $0000 ; Vector_Abort
 dw $0000 ; Vector_NMI
-dw $0000 ; Vector_Reset
+dw Main ; Vector_Reset
 dw $0000 ; IRQ
 
 ; emulation mode

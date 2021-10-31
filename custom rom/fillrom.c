@@ -154,9 +154,30 @@ int main(int ac, char *ag[])
             end_pos = ftell(fd);
         }
         end_pos = ftell(fd);
-        //printf("End pos : %x\n", end_pos);
     }
+    //while (ftell(fd) < 0x300000)
+    //    fwrite(buffer, 1, 1, fd);
     fclose(fsf);
+    /* this is more complex than that, meh
+    fflush(fd);
+    fseek(fd, 0, SEEK_SET);
+    uint16_t checksum = 0;
+    while (fread(&buffer, 1, 1, fd))
+    {
+        checksum += buffer[0];
+        if (feof(fd))
+            break;
+    }
+    printf("%X\n", checksum);
+    buffer[0] = checksum & 0xFF,
+    buffer[1] =  (checksum >> 8) & 0xFF;
+    fseek(fd, 0x7FDE + header_offset, SEEK_SET);
+    fwrite(&buffer, 1, 2, fd);
+    buffer[0] = buffer[0] ^ 0xFF;
+    buffer[1] = buffer[1] ^ 0xFF;
+    fseek(fd, 0x7FDC + header_offset, SEEK_SET);
+    fwrite(&buffer, 1, 2, fd);
+    */
     fclose(fd);
     fd = fopen(ag[1], "rb");
     printf("Checking if the rom follows the expected data\n");

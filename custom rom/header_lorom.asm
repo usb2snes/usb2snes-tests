@@ -14,7 +14,7 @@ db "USB2SNES Test LoROM  "
 
 db $20 ; rom map
 db $02 ; rom type, rom, ram, sram
-db $0a ; rom size
+db $0b ; rom size
 db $03 ; sram size
 db $00 ; ntsc
 db $00 ; use $FFB0 for header

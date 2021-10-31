@@ -41,16 +41,16 @@ if (NO_ROM_READ.Str ∉ $infos.flags) {
 is $usb2snes.get-address(0xE00000 + 48, 100), $test-sram-data.subbuf(48, 100), "SRAM 48:100 = fsf = fsf xor 42";
 is $usb2snes.get-address(0xE00000 + 0x1000, 100), $test-sram-data.subbuf(0x1000, 100), 'SRAM $1000:100 = fsf xor 69';
 
-# Getting the sram size
-
-#say "plop", $snes-sram-size;
 if (NO_ROM_READ.Str ∉ $infos.flags || $snes-sram-size != 0) {
     $snes-sram-size = $usb2snes.get-address(0x7FD8, 1)[0] if NO_ROM_READ.Str ∉ $infos.flags;
+    $snes-sram-size = $usb2snes.get-address(0xFFD8, 1)[0] if $snes-sram-size == 0;
+    #say "plop ", $snes-sram-size;
     init-extra-sram($snes-sram-size);
     #say $test-sram-data.subbuf(0x2000, 30);
-    my $plop = $usb2snes.get-address(0xE00000 + 0x2000, 30);
+    #my $plop = $usb2snes.get-address(0xE00000 + 0x2000, 30);
     #say $plop;
     is $usb2snes.get-address(0xE00000 + 0x2000, 30), $test-sram-data.subbuf(0x2000, 30), 'SRAM $2000:30 = $180000 ^ 11';
+    is $usb2snes.get-address(0xE00000 + 0x3050, 50), $test-sram-data.subbuf(0x3050, 50), 'SRAM $3050:50 = $180000 ^ 12';
 } else {
     skip "No ROM read available, can't know extra sram", 1;
 }

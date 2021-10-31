@@ -8,6 +8,7 @@ our $test-wram-data is export;
 our $test-rom-data-start is export = 0x10_000;
 
 my constant $fsf-song-path = '../custom rom/free-software-song.ogg';
+my constant $rom-data-cache-file = "$*TMPDIR/usb2snes-test-romdata.bin".IO;
 
 sub is-test-rom-running($usb2snes) is export {
     my $infos = $usb2snes.device-infos;
@@ -33,22 +34,41 @@ sub is-test-rom-running($usb2snes) is export {
 
 sub init-test-data is export {
     my $fsf-song = $fsf-song-path.IO.slurp(:bin);
-
-    my $fsf-alt = Buf.new($fsf-song.bytes);
-    loop (my $i = 0; $i < $fsf-song.bytes - 1; $i += 2) {
-        $fsf-alt[$i] = $fsf-song[$i + 1];
-        $fsf-alt[$i + 1] = $fsf-song[$i];
+    if $rom-data-cache-file.e {
+        $test-rom-data = $rom-data-cache-file.slurp(:bin);
+    } else {
+        my $fsf-alt = Buf.new($fsf-song.bytes);
+        loop (my $i = 0; $i < $fsf-song.bytes - 1; $i += 2) {
+            $fsf-alt[$i] = $fsf-song[$i + 1];
+            $fsf-alt[$i + 1] = $fsf-song[$i];
+        }
+        $fsf-alt[$i] = $fsf-song[$i];
+        my $fsf-add5 = Buf.new($fsf-song.bytes);
+        loop ($i = 0; $i < $fsf-song.bytes; $i++) {
+            $fsf-add5[$i] = $fsf-song[$i] + 5;
+        }
+        my $fsf-xor22 = Buf.new($fsf-song.bytes);
+        loop ($i = 0; $i < $fsf-song.bytes; $i++) {
+            $fsf-xor22[$i] = $fsf-song[$i] +^ 22;
+        }
+        $test-rom-data = Buf.new;
+        $test-rom-data.append(Buf.new([0 xx 0x10000]));
+        $test-rom-data.append($fsf-song);
+        $test-rom-data.append($fsf-alt);
+        $test-rom-data.append($fsf-add5);
+        $test-rom-data.append($fsf-xor22);
+        my $fsf-offset = 0;
+        loop ($i = $test-rom-data.bytes; $i < 0x20_0000; $i++) {
+            if ($fsf-offset == $fsf-song.bytes)
+            {
+                $fsf-offset = 0;
+            }
+            $test-rom-data[$i] = $fsf-song[$fsf-offset];
+            $fsf-offset++
+        }
+        $rom-data-cache-file.spurt($test-rom-data);
     }
-    $fsf-alt[$i] = $fsf-song[$i];
-    my $fsf-add5 = Buf.new($fsf-song.bytes);
-    loop ($i = 0; $i < $fsf-song.bytes; $i++) {
-        $fsf-add5[$i] = $fsf-song[$i] + 5;
-    }
-    my $fsf-xor22 = Buf.new($fsf-song.bytes);
-    loop ($i = 0; $i < $fsf-song.bytes; $i++) {
-        $fsf-xor22[$i] = $fsf-song[$i] +^ 22;
-    }
-
+    my $i;
     my $sram = Buf.new(0x2000);
     loop ($i = 0; $i < 0x1000; $i++) {
         $sram[$i] = $fsf-song[$i] +^ 42;
@@ -57,21 +77,7 @@ sub init-test-data is export {
         $sram[$i] = $fsf-song[$i - 0x1000] +^ 69;
     }
     $test-sram-data = $sram;
-    $test-rom-data = Buf.new;
-    $test-rom-data.append(Buf.new([0 xx 0x10000]));
-    $test-rom-data.append($fsf-song);
-    $test-rom-data.append($fsf-alt);
-    $test-rom-data.append($fsf-add5);
-    $test-rom-data.append($fsf-xor22);
-    my $fsf-offset = 0;
-    loop ($i = $test-rom-data.bytes; $i < 0x20_0000; $i++) {
-        if ($fsf-offset == $fsf-song.bytes)
-        {
-            $fsf-offset = 0;
-        }
-        $test-rom-data[$i] = $fsf-song[$fsf-offset];
-        $fsf-offset++
-    }
+
 
     $test-wram-data = Buf.new;
     $test-wram-data.append(Buf.new([0 xx 50]));
@@ -93,11 +99,13 @@ sub init-extra-sram(Int $size is copy) is export {
     my $start-xor = 11;
     my $sram = Buf.new(0x1000);
     my $i;
+    my $rom-offset = 0x180000;
     for ^($size / 0x1000) {
         loop ($i = 0; $i < 0x1000; $i++) {
-            $sram[$i] = $test-rom-data[0x180000 + $i] +^ $start-xor;
+            $sram[$i] = $test-rom-data[$rom-offset + $i] +^ $start-xor;
         }
         $test-sram-data.append($sram);
+        $rom-offset += 0x1000;
         $start-xor++;
     }
 }
