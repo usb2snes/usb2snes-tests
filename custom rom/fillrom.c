@@ -78,13 +78,17 @@ int main(int ac, char *ag[])
     char buffer[1024];
     //char hi_rom_header[0x40];
     bool    hirom = false;
+    bool    exhirom = false;
     FILE* fd = fopen(ag[1], "r+b");
-    if (strcmp(ag[3], "HiROM") == 0)
+    if (strcmp(ag[3], "HiROM") == 0 || strcmp(ag[3], "ExHiROM") == 0)
     {
-        printf("Rom is HiROM\n");
-        hirom = true;
+        printf("Rom is HiROM/ExHiROM\n");
+        if (strcmp(ag[3], "HiROM") == 0)
+            hirom = true;
+        else
+            exhirom = true;
         header_offset += 0x8000;
-        fseek(fd, 0xFFC0, SEEK_SET);
+        //fseek(fd, 0xFFC0, SEEK_SET);
         //fread(hi_rom_header, 1, 0x40, fd);
     } else {
         printf("Rom is LoROM\n");
@@ -154,6 +158,24 @@ int main(int ac, char *ag[])
             end_pos = ftell(fd);
         }
         end_pos = ftell(fd);
+    }
+    if (exhirom) {
+        char xored = 23;
+        while (ftell(fd) < 0x600000)
+        {
+            while (readed = fread(&buffer, 1, 1024, fsf))  
+            {
+                if ((ftell(fd) + readed) > 0x600000)
+                    readed = 0x600000 - ftell(fd);
+                for (int i = 0; i < readed; i++)
+                {
+                    buffer[i] = buffer[i] ^ xored;
+                }
+                fwrite(buffer, 1, readed, fd);
+            }
+            rewind(fsf);
+            xored++;
+        }
     }
     //while (ftell(fd) < 0x300000)
     //    fwrite(buffer, 1, 1, fd);

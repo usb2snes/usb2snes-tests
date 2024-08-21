@@ -249,7 +249,25 @@ method send-data(Buf $data) {
     $!ws.send($data);
 }
 
-method  !get-reply ($timeout = 200){
+method  get-data($timeout = 200) {
+    my $message;
+    react {
+        whenever $!ws.messages -> $msg {
+            whenever $msg.body-blob -> $body {
+                $message = $body;
+                done();
+            }
+        }
+        whenever  Promise.in($timeout / 1000) {
+            say "Request time out after " ~ $timeout ~ " ms";
+            done();
+        }
+    }
+    return Empty unless $message;
+    return $message;
+}
+
+method  !get-reply ($timeout = 200) {
     my $message;
     react {
         whenever $!ws.messages -> $msg {

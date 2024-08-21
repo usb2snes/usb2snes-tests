@@ -13,7 +13,7 @@ my constant $rom-data-cache-file = "$*TMPDIR/usb2snes-test-romdata.bin".IO;
 sub is-test-rom-running($usb2snes) is export {
     my $infos = $usb2snes.device-infos;
     unless $infos.rom-running eq '/usb2snes-tests/test-lorom.sfc' | '/usb2snes-tests/test-hirom.sfc' | '/usb2snes-tests/test-exhirom.sfc'
-            | 'USB2SNES Test LoROM  ' | 'USB2SNES Test HiROM  ' | 'USB2SNES Test ExHiROM'  || $infos.rom-running ~~ /"usb2snes-testlorom"/
+            | 'USB2SNES Test LoROM' | 'USB2SNES Test LoROM  ' | 'USB2SNES Test HiROM  ' | 'USB2SNES Test ExHiROM'  || $infos.rom-running ~~ /"usb2snes-testlorom"/
             || $infos.rom-running ~~ /"usb2snes-testhirom"/ {
         diag "Not running one of the test rom";
         done-testing;

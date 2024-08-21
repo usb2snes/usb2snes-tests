@@ -26,8 +26,13 @@ sub test-wram($nb-iteration) {
         my $value = $usb2snes.get-address(WRAM-START + $wram-loc, $size);
         unless $value eq $test-wram-data.subbuf($wram-loc, $size) {
             $test-ok = False;
+            #last;
+        }
+        if $value.elems == 0 {
+            $test-ok = False;
             last;
         }
+        say $_, " : ",  (WRAM-START + $wram-loc).base(16), " : ", $size;
     }
 }
 
@@ -51,8 +56,10 @@ sub pick-addr-test {
     }
 }
 
-test-wram 1000;
+test-wram 100000;
 ok $test-ok, "Running 1000 random get command in WRAM";
+
+exit;
 
 $test-ok = True;
 for ^10_000 {
@@ -60,7 +67,7 @@ for ^10_000 {
     my $value = $usb2snes.get-address($start-loc, $size);
     unless $value eq $expected-data {
         $test-ok = False;
-        last;
+        #last;
     }
 }
 

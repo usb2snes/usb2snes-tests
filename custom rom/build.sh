@@ -19,3 +19,5 @@ fi
 gcc fillrom.c -o fillrom
 ./fillrom usb2snes-testlorom.sfc free-software-song.ogg LoROM 
 ./fillrom usb2snes-testhirom.sfc free-software-song.ogg HiROM
+./fillrom usb2snes-testexhirom.sfc free-software-song.ogg ExHiROM
+

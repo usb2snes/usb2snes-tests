@@ -60,6 +60,8 @@ ok $usb2snes.get-address(0xF50106, 9) eq Buf.new(<7 8 9 10 11 12 13 14 15>), "2 
 $usb2snes.put-address(0xF50100, $old-data);
 
 $usb2snes.get-address(0xF50000, 1);
+
+
 $usb2snes.close;
 
 done-testing;
