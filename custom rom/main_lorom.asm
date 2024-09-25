@@ -6,7 +6,7 @@ incsrc "snes.asm"
 
 Main: 
     xce
-    rep #$10  
+    sep #$20
     rep #$10    ;met les registres xy en 16 bits 
 
     %SNES_INIT()
@@ -191,13 +191,41 @@ myincyloop:
         jmp romtosram
     endromcpy:
 
-    ;Registre $4200, on active le NMI(VBlank) et le joypad 
+    ;Reactive NMI
+    lda #$80
+    sta !NMITIMEN
 
     Game: 
         wai ; interruption (qui permet d'attendre le NMI) 
-         
-                         
-    jmp Game 
+        lda $20
+        INC
+        sta $20
+        CMP #$30 : BNE .gendloop
+            lda #$00 
+            sta !CGADD
+            lda $213B
+            sta $00
+            lda $213B
+            sta $01
+            rep #$20
+            lda $00
+            INC
+            sta $00
+            sep #$20
+            lda #$00
+            sta !CGADD 
+            lda $01
+            STA !CGDATA
+            lda $00
+            STA !CGDATA
+            stz $20
+        .gendloop
+    jmp Game
 
+    NMI_Routine:
+        stz $2115
+        stz $4210
+        lda $4210
+        rti
 
 

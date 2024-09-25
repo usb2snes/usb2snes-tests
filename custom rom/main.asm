@@ -136,9 +136,23 @@ myincyloop:
 
     Game: 
         wai ; interruption (qui permet d'attendre le NMI) 
-         
-                         
-    jmp Game 
+        lda $20
+        INC
+        sta $20
+        CMP $FF : BNE gendloop
+            lda #$00 
+            sta CGADD 
+            rep #$20
+            lda $213B
+            INC
+            STA CGDATA
+            sep #$20
+        .gendloop
+    jmp Game
+
+    NMI_Routine:
+        rti
+
 
 
 

@@ -1,5 +1,5 @@
 
-~/asar-1.81/src/asar/asar-standalone main_lorom.asm
+'/mnt/d/Project/QUsb2snes/tests/usb2snes-tests/custom rom/asar-1.90RC1/src/asar/bin/asar' main_lorom.asm
 cp main_lorom.sfc usb2snes-testlorom.sfc
 
 ~/asar-1.81/src/asar/asar-standalone main_hirom.asm

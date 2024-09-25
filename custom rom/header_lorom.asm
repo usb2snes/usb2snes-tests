@@ -27,7 +27,7 @@ dw $FFFF, $FFFF ; unused
 dw $0000 ; Vector_COP0
 dw $0000 ; Vector_BRK
 dw $0000 ; Vector_Abort
-dw $0000 ; Vector_NMI
+dw NMI_Routine ; Vector_NMI
 dw $0000 ; Vector_Reset
 dw $0000 ; IRQ
 
@@ -36,7 +36,7 @@ dw $FFFF, $FFFF ; unused
 dw $0000 ; Vector_COP
 dw $0000 ; Vector_Unused
 dw $0000 ; Vector_Abort
-dw $0000 ; Vector_NMI
+dw NMI_Routine ; Vector_NMI
 dw Main ; Vector_Reset
 dw $0000 ; IRQ/BRK
 
